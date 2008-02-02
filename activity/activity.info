@@ -1,0 +1,7 @@
+[Activity]
+name = StopWatch
+service_name = org.laptop.StopWatchActivity
+class = activity.StopWatchActivity
+icon = activity-stopwatch
+activity_version = 1
+show_launcher = yes
