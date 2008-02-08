@@ -26,6 +26,7 @@ from sugar.presence.tubeconn import TubeConnection
 
 import stopwatch
 import gobject
+import dobject
 
 import cPickle
 import gtk.gdk
@@ -46,14 +47,13 @@ class StopWatchActivity(Activity):
         self.set_toolbox(toolbox)
         toolbox.show()
 
-        self.model = stopwatch.Model()
-        self.controller = stopwatch.Controller(self.model)
-        self.gui = stopwatch.GUIView(self.model, self.controller)
+        self.tubebox = dobject.TubeBox()
+        self.timer = dobject.TimeHandler("main", self.tubebox)
+        self.gui = stopwatch.GUIView(self.tubebox, self.timer)
         
         self.set_canvas(self.gui.display)
         self.show_all()
 
-        self.tubehandler = None  # Shared session
         self.initiating = False
 
         # get the Presence Service
@@ -122,17 +122,16 @@ class StopWatchActivity(Activity):
             tube_conn = TubeConnection(self.conn,
                 self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES],
                 id, group_iface=self.text_chan[telepathy.CHANNEL_INTERFACE_GROUP])
-            self.tubehandler = stopwatch.TubeHandler(tube_conn, self.initiating,
-                self.model, self.controller)
+            self.tubebox.insert_tube(tube_conn, self.initiating)
     
     def read_file(self, file_path):
         f = open(file_path, 'r')
         q = cPickle.load(f)
         f.close()
-        self.model.reset(q)
+        self.gui.set_all(q)
     
     def write_file(self, file_path):
-        q = self.model.get_all()
+        q = self.gui.get_all()
         f = open(file_path, 'w')
         cPickle.dump(q, f)
         f.close()
