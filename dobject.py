@@ -130,7 +130,8 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
                         
         self.tube.add_signal_receiver(self.receive_message, signal_name='send', dbus_interface=UnorderedHandler.IFACE, sender_keyword='sender', path=self.PATH)
         self.tube.add_signal_receiver(self.tell_history, signal_name='ask_history', dbus_interface=UnorderedHandler.IFACE, sender_keyword='sender', path=self.PATH)
-        self.tube.add_signal_receiver(self.members_changed, signal_name="MembersChanged", dbus_interface="org.freedesktop.Telepathy.Channel.Interface.Group")
+        #self.tube.add_signal_receiver(self.members_changed, signal_name="MembersChanged", dbus_interface="org.freedesktop.Telepathy.Channel.Interface.Group")
+        self.tube.watch_participants(self.members_changed)
         
         if self.object is not None:
             self.ask_history()
@@ -155,6 +156,7 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
         return
     
     def tell_history(self, sender=None):
+        self._logger.debug("tell_history to " + str(sender))
         try:
             if sender == self.tube.get_unique_name():
                 return
@@ -174,11 +176,17 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
             return
         self.object.add_history(hist)
 
+    """
     def members_changed(self, message, added, removed, local_pending, remote_pending, actor, reason):
         added_names = self.tube.InspectHandles(telepathy.CONNECTION_HANDLE_TYPE_LIST, added)
         for name in added_names:
             self.tell_history(name)
-            
+    """
+    def members_changed(self, added, removed):
+        self._logger.debug("members_changed")
+        for (handle, name) in added:
+            self.tell_history(sender=name)
+         
 class UserDict(dbus.gobject_service.ExportedGObject):
     IFACE = "org.dobject.UserDict"
     BASEPATH = "/org/dobject/UserDict/"
