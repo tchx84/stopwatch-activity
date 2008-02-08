@@ -6,6 +6,9 @@ import logging
 import threading
 import thread
 
+def NoneFunction(*args):
+    return
+
 class TubeBox:
     """ A TubeBox is a box that either contains a Tube or does not."""
     def __init__(self):
@@ -87,7 +90,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
                 self._logger.debug("telling offset")
                 remote = self.tube.get_object(sender, self.PATH)
                 start_time += self.offset
-                remote.receive_time(asktime, start_time, time.time() + self.offset)
+                remote.receive_time(asktime, start_time, time.time() + self.offset, reply_handler=NoneFunction, error_handler=NoneFunction)
         finally:
             return
     
@@ -160,7 +163,7 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
                 return
             remote = self.tube.get_object(sender, self.PATH)
             h = self.object.get_history()
-            remote.receive_history(h)
+            remote.receive_history(h, reply_handler=NoneFunction, error_handler=NoneFunction)
         finally:
             return
     
