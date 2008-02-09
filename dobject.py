@@ -6,8 +6,11 @@ import logging
 import threading
 import thread
 
-def NoneFunction(*args):
-    return
+def PassFunction(*args):
+    pass
+
+def ReturnFunction(x):
+    return x
 
 class TubeBox:
     """ A TubeBox is a box that either contains a Tube or does not.
@@ -95,13 +98,13 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
         
     def get_offset(self):
         """Get the difference between local time and group time"""
-        self._logger.debug("offset= " + str(self.offset))
+        self._logger.debug("get_offset " + str(self.offset))
         return self.offset
     
     def set_offset(self, offset):
         """Set the difference between local time and group time, and assert that
         this is correct"""
-        self._logger.debug("set_offset " + str(self.offset))
+        self._logger.debug("set_offset " + str(offset))
         self._offset_lock.acquire()
         self.offset = offset
         self._know_offset = True
@@ -126,7 +129,7 @@ class TimeHandler(dbus.gobject_service.ExportedGObject):
                 self._logger.debug("telling offset")
                 remote = self.tube.get_object(sender, self.PATH)
                 start_time += self.offset
-                remote.receive_time(asktime, start_time, time.time() + self.offset, reply_handler=NoneFunction, error_handler=NoneFunction)
+                remote.receive_time(asktime, start_time, time.time() + self.offset, reply_handler=PassFunction, error_handler=PassFunction)
         finally:
             return
     
@@ -190,9 +193,9 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
         self.tube = None
         
         self.object = None
-        self._tube_box.register_listener(self.get_tube)
+        self._tube_box.register_listener(self.set_tube)
 
-    def get_tube(self, tube, is_initiator):
+    def set_tube(self, tube, is_initiator):
         """Callback for the TubeBox"""
         self.tube = tube
         self.add_to_connection(self.tube, self.PATH)
@@ -213,6 +216,16 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
         self.object = obj
         if self.tube is not None:
             self.ask_history()
+            
+    def get_path(self):
+        """Returns the DBus path of this handler.  The path is the closest thing
+        to a unique identifier for each abstract DObject."""
+        return self.PATH
+    
+    def get_tube(self):
+        """Returns the TubeBox used to create this handler.  This method is
+        necessary if one DObject wishes to create another."""
+        return self._tube_box
     
     @dbus.service.signal(dbus_interface=IFACE, signature='v')
     def send(self, message):
@@ -239,7 +252,7 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
                 return
             remote = self.tube.get_object(sender, self.PATH)
             h = self.object.get_history()
-            remote.receive_history(h, reply_handler=NoneFunction, error_handler=NoneFunction)
+            remote.receive_history(h, reply_handler=PassFunction, error_handler=PassFunction)
         finally:
             return
     
@@ -261,3 +274,119 @@ class UnorderedHandler(dbus.gobject_service.ExportedGObject):
         self._logger.debug("members_changed")
         for (handle, name) in added:
             self.tell_history(sender=name)
+
+def empty_translator(x, pack):
+    return x
+
+class HighScore():
+    def __init__(self, handler, initval, initscore, value_translator=empty_translator, score_translator=empty_translator):
+        self._logger = logging.getLogger('stopwatch.HighScore')
+        self._lock = threading.Lock()
+        self._value = initval
+        self._score = initscore
+        
+        self._val_trans = value_translator
+        self._score_trans = score_translator
+        
+        self._handler = handler
+        self._handler.register(self)
+        
+        self._listeners = []
+    
+    def _set_value_from_net(self, val, score):
+        self._logger.debug("set_value_from_net " + str(val) + " " + str(score))
+        if self._actually_set_value(val, score):
+            self._trigger()
+    
+    def receive_message(self, message):
+        self._logger.debug("receive_message " + str(message))
+        self._set_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False))
+    
+    add_history = receive_message
+    
+    def set_value(self, val, score):
+        self._logger.debug("set_value " + str(val) + " " + str(score))
+        if self._actually_set_value(val, score):
+            self._handler.send(self.get_history())
+            
+    def _actually_set_value(self, value, score):
+        self._logger.debug("_actually_set_value " + str(value)+ " " + str(score))
+        self._lock.acquire()
+        if self._score < score:
+            self._value = value
+            self._score = score
+            self._lock.release()
+            return True
+        else:
+            self._logger.debug("not changing value")
+            self._lock.release()
+            return False
+    
+    def get_value(self):
+        return self._value
+    
+    def get_score(self):
+        return self._score
+    
+    def get_pair(self):
+        self._lock.acquire()
+        pair = (self._value, self._score)
+        self._lock.release()
+        return pair
+    
+    def get_history(self):
+        p = self.get_pair()
+        return (self._val_trans(p[0], True), self._score_trans(p[1], True))
+    
+    def register_listener(self, L):
+        self._lock.acquire()
+        self._listeners.append(L)
+        self._lock.release()
+        (v,s) = self.get_pair()
+        L(v,s)
+    
+    def _trigger(self):
+        (v,s) = self.get_pair()
+        for L in self._listeners:
+            L(v,s)
+
+def float_translator(f, pack):
+    if pack:
+        return dbus.Double(f)
+    else:
+        return float(f)
+
+def string_translator(s, pack):
+    if pack:
+        return dbus.String(s)
+    else:
+        return str(s)
+
+class Latest:
+    def __init__(self, handler, initval, inittime=float('-inf'), time_handler=None, translator=empty_translator):
+        if time_handler is None:
+            self._time_handler = TimeHandler(handler.get_path(), handler.get_tube())
+        else:
+            self._time_handler = time_handler
+        
+        self._listeners = []
+        self._lock = threading.Lock()
+        
+        self._highscore = HighScore(handler, initval, inittime, translator, float_translator)
+        self._highscore.register_listener(self._highscore_cb)
+    
+    def get_value(self):
+        return self._highscore.get_value()
+    
+    def set_value(self, val):
+        self._highscore.set_value(val, self._time_handler.time())
+    
+    def register_listener(self, L):
+        self._lock.acquire()
+        self._listeners.append(L)
+        self._lock.release()
+        L(self.get_value())
+    
+    def _highscore_cb(self, val, score):
+        for L in self._listeners:
+            L(val)

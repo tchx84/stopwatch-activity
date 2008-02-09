@@ -33,58 +33,6 @@ from gettext import gettext
 IFACE = "org.laptop.StopWatch"
 PATH = "/org/laptop/StopWatch"
 
-class NameModel():
-    def __init__(self, name, handler):
-        self._logger = logging.getLogger('stopwatch.NameModel')
-        self._lock = threading.Lock()
-        self._name = name
-        self._time = float('-inf')
-        self._handler = handler
-        self._handler.register(self)
-        
-        self._view_listener = None
-
-    def get_history(self):
-        return dbus.Struct((self._name, self._time), signature='sd')
-    
-    def set_name_from_net(self, name, t):
-        self._logger.debug("set_name_from_net " + name)
-        if self.set_name(name, t):
-            self._trigger()
-    
-    def receive_message(self, message):
-        self.set_name_from_net(str(message[0]), float(message[1]))
-    
-    add_history = receive_message
-    
-    def set_name_from_UI(self, name, t):
-        self._logger.debug("set_name_from_UI " + name)
-        if self.set_name(name, t):
-            self._handler.send(self.get_history())
-            
-    def set_name(self, name, t):
-        self._logger.debug("set_name " + name)
-        self._lock.acquire()
-        if self._time < t:
-            self._name = str(name)
-            self._time = float(t)
-            self._lock.release()
-            return True
-        else:
-            self._lock.release()
-            return False
-    
-    def get_name(self):
-        return (self._name, self._time)
-        
-    def register_view_listener(self, L):
-        self._view_listener = L
-        self._trigger()
-    
-    def _trigger(self):
-        if self._view_listener is not None:
-            thread.start_new_thread(self._view_listener, (self._name,))
-
 class WatchModel():
     STATE_PAUSED = 1
     STATE_RUNNING = 2
@@ -226,7 +174,7 @@ class OneWatchView():
         self._name = gtk.Entry()
         self._name_changed_handler = self._name.connect('changed', self._name_cb)
         self._name_lock = threading.Lock()
-        self._name_model.register_view_listener(self.update_name)
+        self._name_model.register_listener(self._update_name_cb)
         
         check = gtk.Image()
         check.set_from_file('check.svg')
@@ -312,7 +260,12 @@ class OneWatchView():
             self._label_lock.release()
         self._update_lock.release()
     
+    def _update_name_cb(self, name):
+        self._logger.debug("_update_name_cb " + name)
+        thread.start_new_thread(self.update_name, (name,))
+    
     def update_name(self, name):
+        self._logger.debug("update_name " + name)
         self._name_lock.acquire()
         self._name.set_editable(False)
         self._name.handler_block(self._name_changed_handler)
@@ -375,8 +328,7 @@ class OneWatchView():
         return True
     
     def _name_cb(self, widget):
-        t = time.time()
-        self._name_model.set_name_from_UI(widget.get_text(), self._offset + t)
+        self._name_model.set_value(widget.get_text())
         return True
         
     def pause(self):
@@ -422,7 +374,7 @@ class GUIView():
         self._watches = []
         for i in xrange(GUIView.NUM_WATCHES):
             name_handler = dobject.UnorderedHandler("name"+str(i), tubebox)
-            name_model = NameModel(gettext("Stopwatch") + " " + locale.str(i+1), name_handler)
+            name_model = dobject.Latest(name_handler, gettext("Stopwatch") + " " + locale.str(i+1), time_handler=timer, translator=dobject.string_translator)
             self._names.append(name_model)
             watch_handler = dobject.UnorderedHandler("watch"+str(i), tubebox)
             watch_model = WatchModel(watch_handler)
@@ -437,7 +389,7 @@ class GUIView():
         self._pause_lock = threading.Lock()
     
     def get_names(self):
-        return [n.get_name() for n in self._names]
+        return [n.get_value() for n in self._names]
     
     def set_names(self, namestate):
         for i in xrange(GUIView.NUM_WATCHES):
