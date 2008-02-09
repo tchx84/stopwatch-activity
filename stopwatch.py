@@ -109,7 +109,7 @@ class WatchModel():
         self._handler.register(self)
         
     def get_history(self):
-        return dbus.Struct((self._init_state, self._history), signature='(id)a(di)')
+        return dbus.Struct((dbus.Struct(self._init_state, signature="id"), dbus.Array(self._history, signature='(di)')), signature='(id)a(di)')
     
     def get_state(self):
         return self._state
@@ -131,7 +131,8 @@ class WatchModel():
             if self.add_event((float(ev[0]), int(ev[1]))):
                 changed = True
         if changed:
-            self._update_state()
+            if self._update_state():
+                self._trigger()
         self._history_lock.release()
     
     def add_event(self, ev):
@@ -143,16 +144,30 @@ class WatchModel():
             return False
     
     def add_event_from_net(self, ev):
+        self._history_lock.acquire()
         if self.add_event(ev):
-            self._update_state()
+            if self._update_state(): #only trigger if the event caused a change
+                self._trigger()
+        self._history_lock.release()
     
     def receive_message(self, msg):
         self.add_event_from_net((float(msg[0]), int(msg[1])))
     
     def add_event_from_view(self, ev):
+        self._history_lock.acquire()
         if self.add_event(ev):
             self._update_state()
+            self._history_lock.release()
+            self._trigger()
             self._handler.send(dbus.Struct(ev, signature='di'))
+        else:
+            self._history_lock.release()
+            #We always trigger when an event is received from the UI.  Otherwise,
+            #due to desynchronized clocks, it is possible to click Start/Stop
+            # and produce an old event that is irrelevant.  This results in the
+            # UI reaching an inconsistent state, with the button toggled off
+            # but the clock still running.
+            self._trigger()
         
     def _update_state(self):
         self._logger.debug("_update_state")
@@ -176,13 +191,15 @@ class WatchModel():
                     s = WatchModel.STATE_PAUSED
                     timeval = event_time - timeval
 
-        self._set_state((s, timeval))
+        return self._set_state((s, timeval))
         
     def _set_state(self, q):
         self._logger.debug("_set_state")
         if self._state != q:
             self._state = q
-            self._trigger()
+            return True
+        else:
+            return False
     
     def register_view_listener(self, L):
         self._logger.debug("register_view_listener ")
