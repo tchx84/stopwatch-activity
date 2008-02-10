@@ -376,7 +376,7 @@ class HighScore():
         if self._break_ties and (tiebreaker is None):
             tiebreaker = random.random()
         self._lock.acquire()
-        if self._break_ties 
+        if self._break_ties: 
             if (self._score < score) or ((self._score == score) and (self._tiebreaker < tiebreaker)):
                 self._value = value
                 self._score = score
