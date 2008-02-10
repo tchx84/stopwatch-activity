@@ -192,7 +192,10 @@ class OneWatchView():
         self._reset_button.props.focus_on_click = False
         self._reset_button.connect('clicked', self._reset_cb)
         
+        x = gtk.Image()
+        x.set_from_file('x.svg')
         self._mark_button = gtk.Button(gettext("Mark"))
+        self._mark_button.set_image(x)
         self._mark_button.props.focus_on_click = False
         self._mark_button.connect('clicked', self._mark_cb)
         
@@ -220,6 +223,7 @@ class OneWatchView():
         self.box.pack_start(self._name, padding=6)
         self.box.pack_start(self._run_button, expand=False)
         self.box.pack_start(self._reset_button, expand=False)
+        self.box.pack_start(self._mark_button, expand=False)
         self.box.pack_end(eb, expand=False, padding=6)
         
         markfont = pango.FontDescription()
@@ -380,6 +384,12 @@ class OneWatchView():
         self._logger.debug("resume")
         self._is_visible.set()
     
+    def refresh(self):
+        """Make sure display is up-to-date"""
+        self._update_name_cb(self._name_model.get_value())
+        thread.start_new_thread(self.update_state, (self._watch_model.get_state(),))
+        self._update_marks()
+    
     def _got_focus_cb(self, widget, event):
         self._logger.debug("got focus")
         self.backbox.modify_bg(gtk.STATE_NORMAL, self._black)
@@ -407,7 +417,7 @@ class OneWatchView():
         return False
             
 class GUIView():
-    NUM_WATCHES = 10
+    NUM_WATCHES = 9
 
     def __init__(self, tubebox, timer):
         self.timer = timer
@@ -424,6 +434,7 @@ class GUIView():
             self._watches.append(watch_model)
             marks_handler = dobject.UnorderedHandler("marks"+str(i), tubebox)
             marks_model = dobject.AddOnlySet(marks_handler, translator = dobject.float_translator)
+            self._markers.append(marks_model)
             watch_view = OneWatchView(watch_model, name_model, marks_model, timer)
             self._views.append(watch_view)
             
@@ -438,7 +449,7 @@ class GUIView():
     
     def set_names(self, namestate):
         for i in xrange(GUIView.NUM_WATCHES):
-            self._names[i].add_history(namestate[i])
+            self._names[i].set_value(namestate[i])
     
     def get_state(self):
         return [w.get_state() for w in self._watches]
@@ -447,13 +458,23 @@ class GUIView():
         for i in xrange(GUIView.NUM_WATCHES):
             self._watches[i].reset(states[i])
     
+    def get_marks(self):
+        return [list(m) for m in self._markers]
+    
+    def set_marks(self, marks):
+        for i in xrange(GUIView.NUM_WATCHES):
+            self._markers[i].update(marks[i])
+    
     def get_all(self):
-        return (self.timer.get_offset(), self.get_names(), self.get_state())
+        return (self.timer.get_offset(), self.get_names(), self.get_state(), self.get_marks())
     
     def set_all(self, q):
         self.timer.set_offset(q[0])
         self.set_names(q[1])
         self.set_state(q[2])
+        self.set_marks(q[3])
+        for v in self._views:
+            v.refresh()
     
     def pause(self):
         self._pause_lock.acquire()
