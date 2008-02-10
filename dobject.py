@@ -1,4 +1,6 @@
 """
+Copyright 2008 Benjamin M. Schwartz
+
 DOBject is LGPLv2+
 
 DObject is free software: you can redistribute it and/or modify
