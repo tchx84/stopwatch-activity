@@ -23,6 +23,7 @@ import time
 import logging
 import threading
 import thread
+import random
 
 """
 DObject is a library of components useful for constructing distributed
@@ -321,13 +322,22 @@ class HighScore():
     translator function that converts values or scores to and from a format that
     can be serialized reliably by dbus-python.
     
-    Currently, coherence is only guaranteed in the absence of ties.
+    In the event of a tie, coherence cannot be guaranteed.  If ties are likely
+    with the score of choice, the user may set break_ties=True, which appends a
+    random number to each message, and thereby reduces the probability of a tie
+    by a factor of 2**52.
     """
-    def __init__(self, handler, initval, initscore, value_translator=empty_translator, score_translator=empty_translator):
+    def __init__(self, handler, initval, initscore, value_translator=empty_translator, score_translator=empty_translator, break_ties=False):
         self._logger = logging.getLogger('stopwatch.HighScore')
         self._lock = threading.Lock()
         self._value = initval
         self._score = initscore
+        
+        self._break_ties = break_ties
+        if self._break_ties:
+            self._tiebreaker = random.random()
+        else:
+            self._tiebreaker = None
         
         self._val_trans = value_translator
         self._score_trans = score_translator
@@ -337,14 +347,18 @@ class HighScore():
         
         self._listeners = []
     
-    def _set_value_from_net(self, val, score):
+    def _set_value_from_net(self, val, score, tiebreaker):
         self._logger.debug("set_value_from_net " + str(val) + " " + str(score))
-        if self._actually_set_value(val, score):
+        if self._actually_set_value(val, score, tiebreaker):
             self._trigger()
     
     def receive_message(self, message):
         self._logger.debug("receive_message " + str(message))
-        self._set_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False))
+        if len(message) == 2: #Remote has break_ties=False
+            self._set_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), None)
+        elif len(message) == 3:
+            self._set_value_from_net(self._val_trans(message[0], False), self._score_trans(message[1], False), float_translator(message[2], False))
+            
     
     add_history = receive_message
     
@@ -354,13 +368,25 @@ class HighScore():
         other participants.
         """
         self._logger.debug("set_value " + str(val) + " " + str(score))
-        if self._actually_set_value(val, score):
+        if self._actually_set_value(val, score, None):
             self._handler.send(self.get_history())
             
-    def _actually_set_value(self, value, score):
+    def _actually_set_value(self, value, score, tiebreaker):
         self._logger.debug("_actually_set_value " + str(value)+ " " + str(score))
+        if self._break_ties and (tiebreaker is None):
+            tiebreaker = random.random()
         self._lock.acquire()
-        if self._score < score:
+        if self._break_ties 
+            if (self._score < score) or ((self._score == score) and (self._tiebreaker < tiebreaker)):
+                self._value = value
+                self._score = score
+                self._tiebreaker = tiebreaker
+                self._lock.release()
+                return True
+            else:
+                self._lock.release()
+                return False
+        elif self._score < score:
             self._value = value
             self._score = score
             self._lock.release()
@@ -385,9 +411,21 @@ class HighScore():
         self._lock.release()
         return pair
     
+    def _get_all(self):
+        if self._break_ties:
+            self._lock.acquire()
+            q = (self._value, self._score, self._tiebreaker)
+            self._lock.release()
+            return q
+        else:
+            return self.get_pair()
+    
     def get_history(self):
-        p = self.get_pair()
-        return (self._val_trans(p[0], True), self._score_trans(p[1], True))
+        p = self._get_all()
+        if self._break_ties:
+            return (self._val_trans(p[0], True), self._score_trans(p[1], True), float_translator(p[2], True))
+        else:
+            return (self._val_trans(p[0], True), self._score_trans(p[1], True))
     
     def register_listener(self, L):
         """Register a function L that will be called whenever another user sets
