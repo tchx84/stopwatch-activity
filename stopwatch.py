@@ -159,10 +159,11 @@ class WatchModel():
             thread.start_new_thread(self._view_listener, (self._state,))
 
 class OneWatchView():
-    def __init__(self, mywatch, myname, timer):
+    def __init__(self, mywatch, myname, mymarks, timer):
         self._logger = logging.getLogger('stopwatch.OneWatchView')
         self._watch_model = mywatch
         self._name_model = myname
+        self._marks_model = mymarks
         self._timer = timer
         
         self._update_lock = threading.Lock()
@@ -191,6 +192,10 @@ class OneWatchView():
         self._reset_button.props.focus_on_click = False
         self._reset_button.connect('clicked', self._reset_cb)
         
+        self._mark_button = gtk.Button(gettext("Mark"))
+        self._mark_button.props.focus_on_click = False
+        self._mark_button.connect('clicked', self._mark_cb)
+        
         timefont = pango.FontDescription()
         timefont.set_family("monospace")
         timefont.set_size(pango.SCALE*14)
@@ -217,8 +222,26 @@ class OneWatchView():
         self.box.pack_start(self._reset_button, expand=False)
         self.box.pack_end(eb, expand=False, padding=6)
         
+        markfont = pango.FontDescription()
+        markfont.set_family("monospace")
+        markfont.set_size(pango.SCALE*10)
+        self._marks_label = gtk.Label()
+        self._marks_label.modify_font(markfont)
+        self._marks_label.set_single_line_mode(True)
+        self._marks_label.set_selectable(True)
+        self._marks_label.set_alignment(0, 0.5) #justify left
+        self._marks_label.set_padding(6,0)
+        self._marks_model.register_listener(self._update_marks)
+        eb2 = gtk.EventBox()
+        eb2.add(self._marks_label)
+        eb2.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
+        
+        filler0 = gtk.VBox()
+        filler0.pack_start(self.box, expand=False, fill=False)
+        filler0.pack_start(eb2, expand=False, fill=False)
+        
         filler = gtk.VBox()
-        filler.pack_start(self.box, expand=True, fill=False)
+        filler.pack_start(filler0, expand=True, fill=False)
         
         self.backbox = gtk.EventBox()
         self.backbox.add(filler)
@@ -327,6 +350,24 @@ class OneWatchView():
         self._watch_model.add_event_from_view((self._timer.get_offset() + t, WatchModel.RESET_EVENT))
         return True
     
+    def _mark_cb(self, widget):
+        t = time.time() + self._offset
+        self._logger.debug("mark button pressed: " + str(t))
+        s = self._state
+        tval = self._timeval
+        if s == WatchModel.STATE_RUNNING:
+            self._marks_model.add(max(0.0, t - tval))
+        elif s == WatchModel.STATE_PAUSED:
+            self._marks_model.add(tval)
+        self._update_marks()
+    
+    def _update_marks(self, diffset=None):
+        L = list(self._marks_model)
+        L.sort()
+        s = [self._format(num) for num in L]
+        p = " ".join(s)
+        self._marks_label.set_text(p)
+    
     def _name_cb(self, widget):
         self._name_model.set_value(widget.get_text())
         return True
@@ -351,7 +392,6 @@ class OneWatchView():
         self._name.modify_bg(gtk.STATE_NORMAL, self._gray)
         return True
     
-    
     # KP_End == check gamekey = 65436
     # KP_Page_Down == X gamekey = 65435
     # KP_Home == box gamekey = 65429
@@ -362,6 +402,8 @@ class OneWatchView():
             self._run_button.clicked()
         elif event.keyval == 65434:
             self._reset_button.clicked()
+        elif event.keyval == 65435:
+            self._mark_button.clicked()
         return False
             
 class GUIView():
@@ -372,6 +414,7 @@ class GUIView():
         self._views = []
         self._names = []
         self._watches = []
+        self._markers = []
         for i in xrange(GUIView.NUM_WATCHES):
             name_handler = dobject.UnorderedHandler("name"+str(i), tubebox)
             name_model = dobject.Latest(name_handler, gettext("Stopwatch") + " " + locale.str(i+1), time_handler=timer, translator=dobject.string_translator)
@@ -379,7 +422,9 @@ class GUIView():
             watch_handler = dobject.UnorderedHandler("watch"+str(i), tubebox)
             watch_model = WatchModel(watch_handler)
             self._watches.append(watch_model)
-            watch_view = OneWatchView(watch_model, name_model, timer)
+            marks_handler = dobject.UnorderedHandler("marks"+str(i), tubebox)
+            marks_model = dobject.AddOnlySet(marks_handler, translator = dobject.float_translator)
+            watch_view = OneWatchView(watch_model, name_model, marks_model, timer)
             self._views.append(watch_view)
             
         self.display = gtk.VBox()
