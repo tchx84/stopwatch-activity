@@ -443,7 +443,7 @@ class Latest:
             L(val)
 
 class AddOnlySet:
-    """The AddOnlySet is the archetypal DObject.  It consists of a set,
+    """The AddOnlySet is the archetypal UnorderedObject.  It consists of a set,
     supporting all the normal Python set operations except those that cause an
     item to be removed from the set.  Thanks to this restriction, a AddOnlySet
     is perfectly coherent, since the order in which elements are added is not
