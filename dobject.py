@@ -505,9 +505,13 @@ class AddOnlySet:
     is perfectly coherent, since the order in which elements are added is not
     important.
     """
-    def __init__(self, handler, initset = set(), translator=empty_translator):
+    def __init__(self, handler, initset = None, translator=empty_translator):
         self._logger = logging.getLogger('dobject.AddOnlySet')
-        self._set = initset
+        if initset is None:
+            self._set = set()
+        else:
+            self._set = initset
+        
         self._lock = threading.Lock()
 
         self._trans = translator
@@ -577,10 +581,10 @@ class AddOnlySet:
         present, it will be broadcast to all other users."""
         if y not in self._set:
             self._set.add(y)
-            self._send((y))
+            self._send((y,))
     
     def _send(self, els):
-        self._handler.send((self._trans(el, True) for el in els))
+        self._handler.send(dbus.Array([self._trans(el, True) for el in els]))
     
     def _net_update(self, y):
         s = set(y)
@@ -593,7 +597,7 @@ class AddOnlySet:
         self._net_update((self._trans(el, False) for el in msg))
     
     def get_history(self):
-        return (self._trans(el, True) for el in self._set)
+        return dbus.Array([self._trans(el, True) for el in self._set])
     
     add_history = receive_message
     
