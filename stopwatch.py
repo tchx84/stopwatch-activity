@@ -23,15 +23,9 @@ import logging
 import time
 import thread
 import threading
-import cPickle
-import sets
-import bisect
 import locale
 import pango
 from gettext import gettext
-
-IFACE = "org.laptop.StopWatch"
-PATH = "/org/laptop/StopWatch"
 
 class WatchModel():
     STATE_PAUSED = 1
@@ -39,89 +33,75 @@ class WatchModel():
     
     RUN_EVENT = 1
     PAUSE_EVENT = 2
-    RESET_EVENT = 3    
+    RESET_EVENT = 3
+    
+    _default_basestate = (0.0, STATE_PAUSED)
+
+    def _trans(self, s, pack):
+        if pack:
+            return dbus.Struct((dbus.Double(s[0]), dbus.Int32(s[1])), signature="di")
+        else:
+            return (float(s[0]), int(s[1]))
 
     def __init__(self, handler):
         self._logger = logging.getLogger('stopwatch.WatchModel')
-        self._known_events = sets.Set()
-        self._history = []
+        self._history = dobject.AddOnlySortedSet(handler, translator=self._trans)
         self._history_lock = threading.RLock()
 
         self._view_listener = None  #This must be done before _update_state
         
-        self._init_state = (WatchModel.STATE_PAUSED, 0.0)
-        self._state = ()
-        self._update_state() #This must be done before registering with the handler
-
-        self._handler = handler
-        self._handler.register(self)
+        handler2 = handler.copy("basestate")
         
-    def get_history(self):
-        return dbus.Struct((dbus.Struct(self._init_state, signature="id"), dbus.Array(self._history, signature='(di)')), signature='(id)a(di)')
+        self._base_state = dobject.HighScore(handler2, WatchModel._default_basestate,
+                     float("-inf"), self._trans, dobject.float_translator)
+        
+        self._state = ()
+        self._update_state() #sets the state to the base_state
     
+        self._base_state.register_listener(self._basestate_cb)
+        self._history.register_listener(self._history_cb)
+        
     def get_state(self):
         return self._state
-        
-    def reset(self, init_state):
-        self._history_lock.acquire()
-        self._init_state = init_state
-        self._history = []
-        self._state = ()
-        self._update_state()
-        self._history_lock.release()
     
-    def add_history(self, (init, hist)):
-        self._logger.debug("add_history")
-        self._history_lock.acquire()
-        self._init_state = (int(init[0]), float(init[1]))
-        changed = False
-        for ev in hist:
-            if self.add_event((float(ev[0]), int(ev[1]))):
-                changed = True
-        if changed:
-            if self._update_state():
-                self._trigger()
-        self._history_lock.release()
-    
-    def add_event(self, ev):
-        if ev not in self._known_events:
-            self._known_events.add(ev)
-            bisect.insort(self._history, ev)
-            return True
+    def get_last_update_time(self):
+        if len(self._history) > 0:
+            lastevent = self._history.last()
+            return lastevent[0]
         else:
-            return False
+            return float("-inf")
+        
+    def reset(self, s, t):
+        self._base_state.set_value(s, t)
+        self._update_state()
     
-    def add_event_from_net(self, ev):
-        self._history_lock.acquire()
-        if self.add_event(ev):
-            if self._update_state(): #only trigger if the event caused a change
-                self._trigger()
-        self._history_lock.release()
+    def _basestate_cb(self, v, s):
+        self._update_state()
+        self._trigger()
     
-    def receive_message(self, msg):
-        self.add_event_from_net((float(msg[0]), int(msg[1])))
+    def _history_cb(self, diffset):
+        self._update_state()
+        self._trigger
     
     def add_event_from_view(self, ev):
         self._history_lock.acquire()
-        if self.add_event(ev):
+        if ev not in self._history:
+            self._history.add(ev)
             self._update_state()
-            self._history_lock.release()
-            self._trigger()
-            self._handler.send(dbus.Struct(ev, signature='di'))
-        else:
-            self._history_lock.release()
-            #We always trigger when an event is received from the UI.  Otherwise,
-            #due to desynchronized clocks, it is possible to click Start/Stop
-            # and produce an old event that is irrelevant.  This results in the
-            # UI reaching an inconsistent state, with the button toggled off
-            # but the clock still running.
-            self._trigger()
+        self._history_lock.release()
+        self._trigger()
+        #We always trigger when an event is received from the UI.  Otherwise,
+        #due to desynchronized clocks, it is possible to click Start/Stop
+        # and produce an old event that is irrelevant.  This results in the
+        # UI reaching an inconsistent state, with the button toggled off
+        # but the clock still running.
         
     def _update_state(self):
         self._logger.debug("_update_state")
         L = len(self._history)
-        s = self._init_state[0]
-        timeval = self._init_state[1]
+        init = self._base_state.get_value()
+        timeval = init[0]
+        s = init[1]
         #state machine
         for ev in self._history:
             event_time = ev[0]
@@ -139,7 +119,7 @@ class WatchModel():
                     s = WatchModel.STATE_PAUSED
                     timeval = event_time - timeval
 
-        return self._set_state((s, timeval))
+        return self._set_state((timeval, s))
         
     def _set_state(self, q):
         self._logger.debug("_set_state")
@@ -167,7 +147,7 @@ class OneWatchView():
         self._timer = timer
         
         self._update_lock = threading.Lock()
-        self._state = self._watch_model.get_state()
+        self._state = None
         self._timeval = 0
 
         self._offset = self._timer.get_offset()
@@ -270,17 +250,17 @@ class OneWatchView():
         self._logger.debug("update_state: "+str(q))
         self._update_lock.acquire()
         self._logger.debug("acquired update_lock")
-        self._state = q[0]
+        self._state = q[1]
         self._offset = self._timer.get_offset()
         if self._state == WatchModel.STATE_RUNNING:
-            self._timeval = q[1]
+            self._timeval = q[0]
             self._set_run_button_active(True)
             self._should_update.set()
         else:
             self._set_run_button_active(False)
             self._should_update.clear()
             self._label_lock.acquire()
-            self._timeval = q[1]
+            self._timeval = q[0]
             ev = threading.Event()
             gobject.idle_add(self._update_label, self._format(self._timeval), ev)
             ev.wait()
@@ -452,11 +432,11 @@ class GUIView():
             self._names[i].set_value(namestate[i])
     
     def get_state(self):
-        return [w.get_state() for w in self._watches]
+        return [(w.get_state(), w.get_last_update_time()) for w in self._watches]
         
     def set_state(self,states):
         for i in xrange(GUIView.NUM_WATCHES):
-            self._watches[i].reset(states[i])
+            self._watches[i].reset(states[i][0], states[i][1])
     
     def get_marks(self):
         return [list(m) for m in self._markers]
@@ -487,5 +467,3 @@ class GUIView():
         for w in self._views:
             w.resume()
         self._pause_lock.release()
-    
-        
