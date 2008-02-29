@@ -165,12 +165,14 @@ class ListSet:
                 if i in someset:
                     L.append(i)
             self._list = L
+        return self
     
     def __ior__(self, someset):
         if someset.__class__ == self.__class__:
             self._list = merge_or(self._list, someset._list)
         else:
             self.update(someset)
+        return self
     
     def __isub__(self, someset):
         if someset.__class__ == self.__class__:
@@ -178,9 +180,10 @@ class ListSet:
         else:
             L = []
             for i in self._list:
-                if i in someset:
+                if i not in someset:
                     L.append(i)
-            self._list = merge_sub(self._list, L)
+            self._list = L
+        return self
     
     def __iter__(self):
         return self._list.__iter__()
@@ -189,11 +192,8 @@ class ListSet:
         if someset.__class__ == self.__class__:
             self._list = merge_xor(self._list, someset._list)
         else:
-            L = []
-            for i in self._list:
-                if i in someset:
-                    L.append(i)
-            self._list = merge_sub(self._list, L)
+            self.symmetric_difference_update(someset)
+        return self
     
     def __le__(self, someset):
         if someset.__class__ == self.__class__:
@@ -245,14 +245,14 @@ class ListSet:
         else:
             L = []
             for i in self._list:
-                if i in someset:
+                if i not in someset:
                     L.append(i)
-            a._list = merge_sub(self._list, L)
+            a._list = L
         return a
     
     def __xor__(self, someset):
-        a = ListSet()
         if someset.__class__ == self.__class__:
+            a = ListSet()
             a._list = merge_xor(self._list, someset._list)
         else:
             a = self.symmetric_difference(someset)

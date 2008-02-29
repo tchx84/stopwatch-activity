@@ -81,7 +81,7 @@ class WatchModel():
     
     def _history_cb(self, diffset):
         self._update_state()
-        self._trigger
+        self._trigger()
     
     def add_event_from_view(self, ev):
         self._history_lock.acquire()
@@ -304,7 +304,7 @@ class OneWatchView():
             self._is_visible.wait()
             self._label_lock.acquire()
             if self._should_update.isSet() and self._is_visible.isSet():
-                s = self._format(time.time() + self._offset - self._timeval)
+                s = self._format(time.time() + self._timer.offset - self._timeval)
                 ev.clear()
                 gobject.idle_add(self._update_label, s, ev)
                 ev.wait()

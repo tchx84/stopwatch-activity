@@ -587,7 +587,8 @@ class AddOnlySet:
             self._send((y,))
     
     def _send(self, els):
-        self._handler.send(dbus.Array([self._trans(el, True) for el in els]))
+        if len(els) > 0:
+            self._handler.send(dbus.Array([self._trans(el, True) for el in els]))
     
     def _net_update(self, y):
         s = set(y)
@@ -600,7 +601,10 @@ class AddOnlySet:
         self._net_update((self._trans(el, False) for el in msg))
     
     def get_history(self):
-        return dbus.Array([self._trans(el, True) for el in self._set])
+        if len(self._set) > 0:
+            return dbus.Array([self._trans(el, True) for el in self._set])
+        else:
+            return dbus.Array([], type=dbus.Boolean) #Prevent introspection of empty list, which fails 
     
     add_history = receive_message
     
@@ -707,7 +711,8 @@ class AddOnlySortedSet:
             self._send((y,))
     
     def _send(self, els):
-        self._handler.send(dbus.Array([self._trans(el, True) for el in els]))
+        if len(els) > 0:
+            self._handler.send(dbus.Array([self._trans(el, True) for el in els]))
     
     def _net_update(self, y):
         d = ListSet()
@@ -721,7 +726,10 @@ class AddOnlySortedSet:
         self._net_update([self._trans(el, False) for el in msg])
     
     def get_history(self):
-        return dbus.Array([self._trans(el, True) for el in self._set._list])
+        if len(self._set._list) > 0:
+            return dbus.Array([self._trans(el, True) for el in self._set._list])
+        else:
+            return dbus.Array([], type=dbus.Boolean) #prevent introspection of empty list, which fails
     
     add_history = receive_message
     
@@ -1050,3 +1058,111 @@ class CausalDict:
     def _trigger(self, added, removed):
         for L in self._listeners:
             L(added, removed)
+
+class UserDict(dbus.gobject_service.ExportedGObject):
+    IFACE = "org.dobject.UserDict"
+    BASEPATH = "/org/dobject/UserDict/"
+    
+    def __init__(self, name, tubebox, myval, translator = empty_translator):
+        self._myname = name
+        self.PATH = UserDict.BASEPATH + name
+        dbus.gobject_service.ExportedGObject.__init__(self)
+        self._logger = logging.getLogger(self.PATH)
+        self._tube_box = tube_box
+        self.tube = None
+        
+        self._dict = dict()
+        self._myval = myval
+        self._trans = translator
+        
+        self._tube_box.register_listener(self.set_tube)
+        
+        self.__contains__ = self._dict.__contains__
+        #No __delitem__
+        self.__eq__ = self._dict.__eq__
+        self.__ge__ = self._dict.__ge__
+        self.__getitem__ = self._dict.__getitem__
+        self.__gt__ = self._dict.__gt__
+        self.__le__ = self._dict.__le__
+        self.__len__ = self._dict.__len__
+        self.__lt__ = self._dict.__lt__
+        self.__ne__ = self._dict.__ne__
+        #No __setitem__
+        
+        #No clear
+        self.copy = self._dict.copy
+        self.get = self._dict.get
+        self.has_key = self._dict.has_key
+        self.items = self._dict.items
+        self.iteritems = self._dict.iteritems
+        self.iterkeys = self._dict.iterkeys
+        self.itervalues = self._dict.itervalues
+        self.keys = self._dict.keys
+        #No pop
+        #No popitem
+        #No setdefault
+        #No update
+        self.values = self._dict.values
+
+    def set_tube(self, tube, is_initiator):
+        """Callback for the TubeBox"""
+        self.tube = tube
+        self.add_to_connection(self.tube, self.PATH)
+                        
+        self.tube.add_signal_receiver(self.receive_value, signal_name='send_value', dbus_interface=UserDict.IFACE, sender_keyword='sender', path=self.PATH)
+        self.tube.add_signal_receiver(self.tell_value, signal_name='ask_values', dbus_interface=UserDict.IFACE, sender_keyword='sender', path=self.PATH)
+        self.tube.watch_participants(self.members_changed)
+
+        #Alternative implementation of members_changed (not yet working)
+        #self.tube.add_signal_receiver(self.members_changed, signal_name="MembersChanged", dbus_interface="org.freedesktop.Telepathy.Channel.Interface.Group")
+
+        self.ask_values()
+            
+    def get_path(self):
+        """Returns the DBus path of this handler.  The path is the closest thing
+        to a unique identifier for each abstract DObject."""
+        return self.PATH
+    
+    def get_tube(self):
+        """Returns the TubeBox used to create this handler.  This method is
+        necessary if one DObject wishes to create another."""
+        return self._tube_box
+    
+    @dbus.service.signal(dbus_interface=IFACE, signature='v')
+    def send_value(self, value):
+        """This method broadcasts message to all other handlers for this UO"""
+        return
+        
+    @dbus.service.signal(dbus_interface=IFACE, signature='')
+    def ask_values(self):
+        return
+    
+    def tell_value(self, sender=None):
+        self._logger.debug("tell_history to " + str(sender))
+        try:
+            if sender == self.tube.get_unique_name():
+                return
+            remote = self.tube.get_object(sender, self.PATH)
+            remote.receive_value(self._myval, sender_keyword='sender', reply_handler=PassFunction, error_handler=PassFunction)
+        finally:
+            return
+    
+    @dbus.service.method(dbus_interface=IFACE, in_signature = 'v', out_signature='', sender_keyword = 'sender')
+    def receive_value(self, value, sender=None):
+        self._dict[sender] = self._trans(value, False)
+
+    #Alternative implementation of a members_changed (not yet working)
+    """ 
+    def members_changed(self, message, added, removed, local_pending, remote_pending, actor, reason):
+        added_names = self.tube.InspectHandles(telepathy.CONNECTION_HANDLE_TYPE_LIST, added)
+        for name in added_names:
+            self.tell_history(name)
+    """
+    def members_changed(self, added, removed):
+        self._logger.debug("members_changed")
+        for (handle, name) in removed:
+            if name in self._dict:
+                del self._dict[name]
+        for (handle, name) in added:
+            self.tell_value(sender=name)
+
