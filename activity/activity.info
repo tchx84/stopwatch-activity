@@ -3,5 +3,5 @@ name = StopWatch
 service_name = org.laptop.StopWatchActivity
 class = activity.StopWatchActivity
 icon = activity-stopwatch
-activity_version = 3
+activity_version = 4
 show_launcher = yes
