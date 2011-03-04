@@ -48,7 +48,7 @@ class StopWatchActivity(Activity):
 
 	try:
 		from sugar.graphics.toolbarbox import ToolbarBox, ToolbarButton
-		from sugar.activity.widgets import ActivityToolbarButton
+		from sugar.activity.widgets import ActivityToolbarButton, StopButton
 	except ImportError:
 		OLD_TOOLBAR = True
 
@@ -61,6 +61,18 @@ class StopWatchActivity(Activity):
 		toolbar_box = ToolbarBox()
 		self.activity_button = ActivityToolbarButton(self)
 		toolbar_box.toolbar.insert(self.activity_button, 0)
+		
+		separator = gtk.SeparatorToolItem()
+		separator.props.draw = False
+		separator.set_expand(True)
+		toolbar_box.toolbar.insert(separator, -1)
+		separator.show()
+
+		stop_button = StopButton(self)
+		stop_button.props.accelerator = '<Ctrl><Shift>Q'
+		toolbar_box.toolbar.insert(stop_button, -1)
+		stop_button.show()
+
 		self.set_toolbar_box(toolbar_box)
         
 	self.tubebox = dobject.TubeBox()
