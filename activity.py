@@ -43,11 +43,27 @@ class StopWatchActivity(Activity):
         gobject.threads_init()
 
         # top toolbar with share and close buttons:
-        toolbox = ActivityToolbox(self)
-        self.set_toolbox(toolbox)
-        toolbox.show()
 
-        self.tubebox = dobject.TubeBox()
+	OLD_TOOLBAR = False
+
+	try:
+		from sugar.graphics.toolbarbox import ToolbarBox, ToolbarButton
+		from sugar.activity.widgets import ActivityToolbarButton
+	except ImportError:
+		OLD_TOOLBAR = True
+
+	if OLD_TOOLBAR:	
+        	toolbox = ActivityToolbox(self)
+        	self.set_toolbox(toolbox)
+        	toolbox.show()
+	
+	else:
+		toolbar_box = ToolbarBox()
+		self.activity_button = ActivityToolbarButton(self)
+		toolbar_box.toolbar.insert(self.activity_button, 0)
+		self.set_toolbar_box(toolbar_box)
+        
+	self.tubebox = dobject.TubeBox()
         self.timer = dobject.TimeHandler("main", self.tubebox)
         self.gui = stopwatch.GUIView(self.tubebox, self.timer)
         
