@@ -1,6 +1,6 @@
 [Activity]
 name = StopWatch
-service_name = org.laptop.StopWatchActivity
+bundle_id = org.laptop.StopWatchActivity
 class = activity.StopWatchActivity
 icon = activity-stopwatch
 activity_version = 4
