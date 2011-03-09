@@ -44,58 +44,67 @@ class StopWatchActivity(Activity):
 
         # top toolbar with share and close buttons:
 
-	OLD_TOOLBAR = False
+        OLD_TOOLBAR = False
 
-	try:
-		from sugar.graphics.toolbarbox import ToolbarBox, ToolbarButton
-		from sugar.activity.widgets import ActivityToolbarButton, StopButton
-	except ImportError:
-		OLD_TOOLBAR = True
+        try:
+            from sugar.graphics.toolbarbox import ToolbarBox, ToolbarButton
+            from sugar.activity.widgets import ActivityToolbarButton, StopButton, \
+                    ShareButton, KeepButton
+            from mybutton import MyActivityToolbarButton
+        except ImportError:
+            OLD_TOOLBAR = True
 
-	if OLD_TOOLBAR:	
-        	toolbox = ActivityToolbox(self)
-        	self.set_toolbox(toolbox)
-        	toolbox.show()
-	
-	else:
-		toolbar_box = ToolbarBox()
-		self.activity_button = ActivityToolbarButton(self)
-		toolbar_box.toolbar.insert(self.activity_button, 0)
-		
-		separator = gtk.SeparatorToolItem()
-		separator.props.draw = False
-		separator.set_expand(True)
-		toolbar_box.toolbar.insert(separator, -1)
-		separator.show()
+        if OLD_TOOLBAR:    
+                toolbox = ActivityToolbox(self)
+                self.set_toolbox(toolbox)
+                toolbox.show()
+        else:
+            toolbar_box = ToolbarBox()
+            self.activity_button = MyActivityToolbarButton(self)
+            toolbar_box.toolbar.insert(self.activity_button, 0)
+            
+            separator = gtk.SeparatorToolItem()
+            separator.props.draw = False
+            separator.set_expand(True)
+            toolbar_box.toolbar.insert(separator, -1)
+            separator.show()
 
-		stop_button = StopButton(self)
-		stop_button.props.accelerator = '<Ctrl><Shift>Q'
-		toolbar_box.toolbar.insert(stop_button, -1)
-		stop_button.show()
+            share_button = ShareButton(self)
+            toolbar_box.toolbar.insert(share_button, -1)
+            share_button.show()
 
-		self.set_toolbar_box(toolbar_box)
-        
-	self.tubebox = dobject.TubeBox()
-        self.timer = dobject.TimeHandler("main", self.tubebox)
-        self.gui = stopwatch.GUIView(self.tubebox, self.timer)
-        
-        self.set_canvas(self.gui.display)
-        self.show_all()
+            keep_button = KeepButton(self)
+            toolbar_box.toolbar.insert(keep_button, -1)
+            keep_button.show()
 
-        self.initiating = False
+            stop_button = StopButton(self)
+            stop_button.props.accelerator = '<Ctrl><Shift>Q'
+            toolbar_box.toolbar.insert(stop_button, -1)
+            stop_button.show()
 
-        # get the Presence Service
-        self.pservice = presenceservice.get_instance()
-        # Buddy object for you
-        owner = self.pservice.get_owner()
-        self.owner = owner
+            self.set_toolbar_box(toolbar_box)
+            
+            self.tubebox = dobject.TubeBox()
+            self.timer = dobject.TimeHandler("main", self.tubebox)
+            self.gui = stopwatch.GUIView(self.tubebox, self.timer)
+            
+            self.set_canvas(self.gui.display)
+            self.show_all()
 
-        self.connect('shared', self._shared_cb)
-        self.connect('joined', self._joined_cb)
-        
-        self.add_events(gtk.gdk.VISIBILITY_NOTIFY_MASK)
-        self.connect("visibility-notify-event", self._visible_cb)
-        self.connect("notify::active", self._active_cb)
+            self.initiating = False
+
+            # get the Presence Service
+            self.pservice = presenceservice.get_instance()
+            # Buddy object for you
+            owner = self.pservice.get_owner()
+            self.owner = owner
+
+            self.connect('shared', self._shared_cb)
+            self.connect('joined', self._joined_cb)
+            
+            self.add_events(gtk.gdk.VISIBILITY_NOTIFY_MASK)
+            self.connect("visibility-notify-event", self._visible_cb)
+            self.connect("notify::active", self._active_cb)
 
 
     def _shared_cb(self, activity):
