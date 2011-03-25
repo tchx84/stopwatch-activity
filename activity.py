@@ -40,17 +40,18 @@ class StopWatchActivity(Activity):
         Activity.__init__(self, handle)
         self._logger = logging.getLogger('stopwatch-activity')
         
+        # we do not have collaboration features
+        # make the share option insensitive
+        self.max_participants = 1
         gobject.threads_init()
 
         # top toolbar with share and close buttons:
-
         OLD_TOOLBAR = False
 
         try:
             from sugar.graphics.toolbarbox import ToolbarBox, ToolbarButton
             from sugar.activity.widgets import ActivityToolbarButton, StopButton, \
-                    ShareButton, KeepButton
-            from mybutton import MyActivityToolbarButton
+                    ShareButton, KeepButton, TitleEntry, ActivityButton
         except ImportError:
             OLD_TOOLBAR = True
 
@@ -60,14 +61,13 @@ class StopWatchActivity(Activity):
                 toolbox.show()
         else:
             toolbar_box = ToolbarBox()
-            self.activity_button = MyActivityToolbarButton(self)
+            self.activity_button = ActivityButton(self)
             toolbar_box.toolbar.insert(self.activity_button, 0)
-            
-            separator = gtk.SeparatorToolItem()
-            separator.props.draw = False
-            separator.set_expand(True)
-            toolbar_box.toolbar.insert(separator, -1)
-            separator.show()
+            self.activity_button.show()
+
+            title_entry = TitleEntry(self)
+            toolbar_box.toolbar.insert(title_entry, -1)
+            title_entry.show()
 
             share_button = ShareButton(self)
             toolbar_box.toolbar.insert(share_button, -1)
@@ -76,6 +76,12 @@ class StopWatchActivity(Activity):
             keep_button = KeepButton(self)
             toolbar_box.toolbar.insert(keep_button, -1)
             keep_button.show()
+
+            separator = gtk.SeparatorToolItem()
+            separator.props.draw = False
+            separator.set_expand(True)
+            toolbar_box.toolbar.insert(separator, -1)
+            separator.show()
 
             stop_button = StopButton(self)
             stop_button.props.accelerator = '<Ctrl><Shift>Q'
