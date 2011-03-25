@@ -26,6 +26,9 @@ import threading
 import locale
 import pango
 from gettext import gettext
+import powerd
+
+suspend = powerd.Suspend()
 
 class WatchModel():
     STATE_PAUSED = 1
@@ -316,8 +319,10 @@ class OneWatchView():
         self._logger.debug("run button pressed: " + str(t))
         if self._run_button.get_active(): #button has _just_ been set active
             action = WatchModel.RUN_EVENT
+            suspend.inhibit()
         else:
             action = WatchModel.PAUSE_EVENT
+            suspend.uninhibit()
         self._watch_model.add_event_from_view((self._timer.get_offset() + t, action))
         return True
         
