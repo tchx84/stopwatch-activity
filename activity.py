@@ -55,10 +55,10 @@ class StopWatchActivity(Activity):
         except ImportError:
             OLD_TOOLBAR = True
 
-        if OLD_TOOLBAR:    
-                toolbox = ActivityToolbox(self)
-                self.set_toolbox(toolbox)
-                toolbox.show()
+        if OLD_TOOLBAR:
+            toolbox = ActivityToolbox(self)
+            self.set_toolbox(toolbox)
+            toolbox.show()
         else:
             toolbar_box = ToolbarBox()
             self.activity_button = ActivityButton(self)
@@ -89,28 +89,28 @@ class StopWatchActivity(Activity):
             stop_button.show()
 
             self.set_toolbar_box(toolbar_box)
-            
-            self.tubebox = dobject.TubeBox()
-            self.timer = dobject.TimeHandler("main", self.tubebox)
-            self.gui = stopwatch.GUIView(self.tubebox, self.timer)
-            
-            self.set_canvas(self.gui.display)
-            self.show_all()
 
-            self.initiating = False
+        self.tubebox = dobject.TubeBox()
+        self.timer = dobject.TimeHandler("main", self.tubebox)
+        self.gui = stopwatch.GUIView(self.tubebox, self.timer)
 
-            # get the Presence Service
-            self.pservice = presenceservice.get_instance()
-            # Buddy object for you
-            owner = self.pservice.get_owner()
-            self.owner = owner
+        self.set_canvas(self.gui.display)
+        self.show_all()
 
-            self.connect('shared', self._shared_cb)
-            self.connect('joined', self._joined_cb)
-            
-            self.add_events(gtk.gdk.VISIBILITY_NOTIFY_MASK)
-            self.connect("visibility-notify-event", self._visible_cb)
-            self.connect("notify::active", self._active_cb)
+        self.initiating = False
+
+        # get the Presence Service
+        self.pservice = presenceservice.get_instance()
+        # Buddy object for you
+        owner = self.pservice.get_owner()
+        self.owner = owner
+
+        self.connect('shared', self._shared_cb)
+        self.connect('joined', self._joined_cb)
+
+        self.add_events(gtk.gdk.VISIBILITY_NOTIFY_MASK)
+        self.connect("visibility-notify-event", self._visible_cb)
+        self.connect("notify::active", self._active_cb)
 
 
     def _shared_cb(self, activity):
