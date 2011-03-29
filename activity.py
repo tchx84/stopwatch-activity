@@ -40,9 +40,6 @@ class StopWatchActivity(Activity):
         Activity.__init__(self, handle)
         self._logger = logging.getLogger('stopwatch-activity')
         
-        # we do not have collaboration features
-        # make the share option insensitive
-        self.max_participants = 1
         gobject.threads_init()
 
         # top toolbar with share and close buttons:
