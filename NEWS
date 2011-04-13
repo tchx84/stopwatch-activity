@@ -1,3 +1,10 @@
+8
+
+*New templates for langs
+*Restoring collaboration from icarito
+*Fixing blank activity on 0.84 by James Cameron
+*for stop use ctrl-q not shift-ctrl-q, dev.laptop.org #10786 by James Cameron
+
 7
 
 *Patch for d.l.o#10787 by James Cameron
