@@ -123,7 +123,10 @@ class WatchModel():
                     timeval = event_time - timeval
 
         return self._set_state((timeval, s))
-        
+
+    def is_running(self):
+        return self._state[1] == WatchModel.STATE_RUNNING
+
     def _set_state(self, q):
         self._logger.debug("_set_state")
         if self._state != q:
@@ -442,6 +445,8 @@ class GUIView():
     def set_state(self,states):
         for i in xrange(GUIView.NUM_WATCHES):
             self._watches[i].reset(states[i][0], states[i][1])
+            if self._watches[i].is_running():
+                suspend.inhibit()
     
     def get_marks(self):
         return [list(m) for m in self._markers]
