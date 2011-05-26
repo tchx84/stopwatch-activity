@@ -1,7 +1,7 @@
 [Activity]
 name = StopWatch
 bundle_id = org.laptop.StopWatchActivity
-class = activity.StopWatchActivity
+exec = activity.StopWatchActivity
 icon = activity-stopwatch
 activity_version = 9
 show_launcher = yes
