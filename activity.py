@@ -48,7 +48,7 @@ class StopWatchActivity(Activity):
         try:
             from sugar.graphics.toolbarbox import ToolbarBox, ToolbarButton
             from sugar.activity.widgets import ActivityToolbarButton, StopButton, \
-                    ShareButton, KeepButton, TitleEntry, ActivityButton
+                    ShareButton, TitleEntry, ActivityButton
         except ImportError:
             OLD_TOOLBAR = True
 
@@ -69,10 +69,6 @@ class StopWatchActivity(Activity):
             share_button = ShareButton(self)
             toolbar_box.toolbar.insert(share_button, -1)
             share_button.show()
-
-            keep_button = KeepButton(self)
-            toolbar_box.toolbar.insert(keep_button, -1)
-            keep_button.show()
 
             separator = gtk.SeparatorToolItem()
             separator.props.draw = False
