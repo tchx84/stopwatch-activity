@@ -2,36 +2,37 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-12-06 00:41+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2011-07-29 20:01+0200\n"
+"Last-Translator:  <anush.mkrtchyan@ca1492.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: hy\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.7.0\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Pootle 2.0.1\n"
 
 #: activity/activity.info:2
 msgid "StopWatch"
-msgstr ""
+msgstr "Ժամանակաչափ"
 
 #: stopwatch.py:162
 msgid "Start/Stop"
-msgstr ""
+msgstr "Մեկնարկ / Կանգ"
 
 #: stopwatch.py:170
 msgid "Zero"
-msgstr ""
+msgstr "Զրո"
 
 #: stopwatch.py:177
 msgid "Mark"
-msgstr ""
+msgstr "Նշել"
 
 #: stopwatch.py:410
 msgid "Stopwatch"
-msgstr ""
+msgstr "Ժամանակաչափ"
