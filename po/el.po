@@ -1,0 +1,38 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-12-06 00:41+0000\n"
+"PO-Revision-Date: 2011-03-15 13:54+0200\n"
+"Last-Translator: pavlos hatzopoulos <phatzopoulos@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: el\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.1\n"
+
+#: activity/activity.info:2
+msgid "StopWatch"
+msgstr "Ρολόι- διακοπή λειτουργίας"
+
+#: stopwatch.py:162
+msgid "Start/Stop"
+msgstr "Έναρξη/Διακοπή"
+
+#: stopwatch.py:170
+msgid "Zero"
+msgstr "Μηδέν"
+
+#: stopwatch.py:177
+msgid "Mark"
+msgstr "Επισήμανση"
+
+#: stopwatch.py:410
+msgid "Stopwatch"
+msgstr "Ρολόι- διακοπή λειτουργίας"
