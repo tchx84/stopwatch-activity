@@ -5,3 +5,4 @@ exec = sugar-activity activity.StopWatchActivity
 icon = activity-stopwatch
 activity_version = 12
 show_launcher = yes
+license = GPLv3+
