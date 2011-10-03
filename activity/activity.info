@@ -3,6 +3,6 @@ name = StopWatch
 bundle_id = org.laptop.StopWatchActivity
 exec = sugar-activity activity.StopWatchActivity
 icon = activity-stopwatch
-activity_version = 12
+activity_version = 13
 show_launcher = yes
 license = GPLv3+
