@@ -1,0 +1,39 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-12-06 00:41+0000\n"
+"PO-Revision-Date: 2011-11-12 18:14+0200\n"
+"Last-Translator: Chris <cjl@laptop.org>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: quz\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : 1;\n"
+"X-Generator: Pootle 2.0.5\n"
+
+#  "CronóMetro"
+#: activity/activity.info:2
+msgid "StopWatch"
+msgstr ""
+
+#  "Iniciar/Detener"
+#: stopwatch.py:162
+msgid "Start/Stop"
+msgstr "Qallariy / Sayachiy"
+
+#  "Cero"
+#: stopwatch.py:170
+msgid "Zero"
+msgstr ""
+
+#  "Marca"
+#: stopwatch.py:177
+msgid "Mark"
+msgstr ""
+
+#  "Cronómetro"
+#: stopwatch.py:410
+msgid "Stopwatch"
+msgstr ""
