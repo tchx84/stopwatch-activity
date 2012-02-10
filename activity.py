@@ -166,6 +166,7 @@ class StopWatchActivity(Activity):
         self.gui.set_all(q)
     
     def write_file(self, file_path):
+        self.metadata['mime_type'] = 'application/x-stopwatch-activity'
         q = self.gui.get_all()
         f = open(file_path, 'w')
         cPickle.dump(q, f)

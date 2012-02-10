@@ -6,3 +6,4 @@ icon = activity-stopwatch
 activity_version = 13
 show_launcher = yes
 license = GPLv3+
+mime_types = application/x-stopwatch-activity;
