@@ -1,3 +1,7 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -13,7 +17,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n % 10 == 1 && n % 100 != 11) ? 0 : 1;\n"
 "X-Generator: Pootle 2.0.5\n"
 
-#  "CronóMetro"
 #: activity/activity.info:2
 msgid "StopWatch"
 msgstr ""
@@ -23,17 +26,14 @@ msgstr ""
 msgid "Start/Stop"
 msgstr "Qallariy / Sayachiy"
 
-#  "Cero"
 #: stopwatch.py:170
 msgid "Zero"
 msgstr ""
 
-#  "Marca"
 #: stopwatch.py:177
 msgid "Mark"
 msgstr ""
 
-#  "Cronómetro"
 #: stopwatch.py:410
 msgid "Stopwatch"
 msgstr ""

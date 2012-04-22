@@ -18,20 +18,20 @@ msgstr ""
 
 #: activity/activity.info:2
 msgid "StopWatch"
-msgstr ""
+msgstr "Штоперица"
 
 #: stopwatch.py:162
 msgid "Start/Stop"
-msgstr ""
+msgstr "Покрени/Заустави"
 
 #: stopwatch.py:170
 msgid "Zero"
-msgstr ""
+msgstr "Нула"
 
 #: stopwatch.py:177
 msgid "Mark"
-msgstr ""
+msgstr "Означи"
 
 #: stopwatch.py:410
 msgid "Stopwatch"
-msgstr ""
+msgstr "Штоперица"
