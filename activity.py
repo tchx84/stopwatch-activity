@@ -18,18 +18,17 @@
 """Actividad HelloMesh: Un caso de estudio para colaboracion usando Tubos."""
 import logging
 import telepathy
-
-from sugar.activity.activity import Activity, ActivityToolbox
-from sugar.presence import presenceservice
-
-from sugar.presence.tubeconn import TubeConnection
+import gi
+from gi.repository import Gtk, Gdk, GObject
+from sugar3.graphics.toolbarbox import ToolbarBox
+from sugar3.activity.activity import Activity
+from sugar3.presence import presenceservice
+from sugar3.presence.tubeconn import TubeConnection
 
 import stopwatch
-import gobject
 import dobject
 
 import cPickle
-import gtk.gdk
 
 SERVICE = "org.laptop.StopWatch"
 
@@ -40,20 +39,20 @@ class StopWatchActivity(Activity):
         Activity.__init__(self, handle)
         self._logger = logging.getLogger('stopwatch-activity')
         
-        gobject.threads_init()
+        GObject.threads_init()
 
         # top toolbar with share and close buttons:
         OLD_TOOLBAR = False
 
         try:
-            from sugar.graphics.toolbarbox import ToolbarBox, ToolbarButton
-            from sugar.activity.widgets import ActivityToolbarButton, StopButton, \
+            from sugar3.graphics.toolbarbox import ToolbarBox, ToolbarButton
+            from sugar3.activity.widgets import ActivityToolbarButton, StopButton, \
                     ShareButton, TitleEntry, ActivityButton
         except ImportError:
             OLD_TOOLBAR = True
 
         if OLD_TOOLBAR:
-            toolbox = ActivityToolbox(self)
+            toolbox = ToolbarBox(self)
             self.set_toolbox(toolbox)
             toolbox.show()
         else:
@@ -70,7 +69,7 @@ class StopWatchActivity(Activity):
             toolbar_box.toolbar.insert(share_button, -1)
             share_button.show()
 
-            separator = gtk.SeparatorToolItem()
+            separator = Gtk.SeparatorToolItem()
             separator.props.draw = False
             separator.set_expand(True)
             toolbar_box.toolbar.insert(separator, -1)
@@ -100,7 +99,7 @@ class StopWatchActivity(Activity):
         self.connect('shared', self._shared_cb)
         self.connect('joined', self._joined_cb)
 
-        self.add_events(gtk.gdk.VISIBILITY_NOTIFY_MASK)
+        self.add_events(Gdk.EventMask.VISIBILITY_NOTIFY_MASK)
         self.connect("visibility-notify-event", self._visible_cb)
         self.connect("notify::active", self._active_cb)
 
@@ -181,7 +180,7 @@ class StopWatchActivity(Activity):
             
     def _visible_cb(self, widget, event):
         self._logger.debug("_visible_cb")
-        if event.state == gtk.gdk.VISIBILITY_FULLY_OBSCURED:
+        if event.get_state() == Gdk.VisibilityState.FULLY_OBSCURED:
             self.gui.pause()
         else:
             self.gui.resume()

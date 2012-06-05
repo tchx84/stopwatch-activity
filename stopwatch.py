@@ -15,16 +15,14 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import dbus
-import gtk
-import gtk.gdk
-import gobject
+import gi
+from gi.repository import Gtk, Gdk, GObject, Pango
 import dobject
 import logging
 import time
 import thread
 import threading
 import locale
-import pango
 from gettext import gettext
 import powerd
 
@@ -158,46 +156,46 @@ class OneWatchView():
 
         self._offset = self._timer.get_offset()
         
-        self._name = gtk.Entry()
+        self._name = Gtk.Entry()
         self._name_changed_handler = self._name.connect('changed', self._name_cb)
         self._name_lock = threading.Lock()
         self._name_model.register_listener(self._update_name_cb)
         
-        check = gtk.Image()
+        check = Gtk.Image()
         check.set_from_file('check.svg')
-        self._run_button = gtk.ToggleButton(gettext("Start/Stop"))
+        self._run_button = Gtk.ToggleButton(gettext("Start/Stop"))
         self._run_button.set_image(check)
-        self._run_button.props.focus_on_click = False        
+        self._run_button.props.focus_on_click = False
         self._run_handler = self._run_button.connect('clicked', self._run_cb)
         self._run_button_lock = threading.Lock()
 
-        circle = gtk.Image()
+        circle = Gtk.Image()
         circle.set_from_file('circle.svg')
-        self._reset_button = gtk.Button(gettext("Zero"))
+        self._reset_button = Gtk.Button(gettext("Zero"))
         self._reset_button.set_image(circle)
         self._reset_button.props.focus_on_click = False
         self._reset_button.connect('clicked', self._reset_cb)
         
-        x = gtk.Image()
+        x = Gtk.Image()
         x.set_from_file('x.svg')
-        self._mark_button = gtk.Button(gettext("Mark"))
+        self._mark_button = Gtk.Button(gettext("Mark"))
         self._mark_button.set_image(x)
         self._mark_button.props.focus_on_click = False
         self._mark_button.connect('clicked', self._mark_cb)
         
-        timefont = pango.FontDescription()
+        timefont = Pango.FontDescription()
         timefont.set_family("monospace")
-        timefont.set_size(pango.SCALE*14)
-        self._time_label = gtk.Label(self._format(0))
+        timefont.set_size(Pango.SCALE*14)
+        self._time_label = Gtk.Label(label=self._format(0))
         self._time_label.modify_font(timefont)
         self._time_label.set_single_line_mode(True)
         self._time_label.set_selectable(True)
         self._time_label.set_width_chars(10)
         self._time_label.set_alignment(1,0.5) #justify right
         self._time_label.set_padding(6,0)
-        eb = gtk.EventBox()
+        eb = Gtk.EventBox()
         eb.add(self._time_label)
-        eb.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
+        eb.modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse("white"))
         
         self._should_update = threading.Event()
         self._is_visible = threading.Event()
@@ -205,46 +203,46 @@ class OneWatchView():
         self._update_lock = threading.Lock()
         self._label_lock = threading.Lock()
 
-        self.box = gtk.HBox()
-        self.box.pack_start(self._name, padding=6)
-        self.box.pack_start(self._run_button, expand=False)
-        self.box.pack_start(self._reset_button, expand=False)
-        self.box.pack_start(self._mark_button, expand=False)
-        self.box.pack_end(eb, expand=False, padding=6)
+        self.box = Gtk.HBox()
+        self.box.pack_start(self._name, True, True, 6)
+        self.box.pack_start(self._run_button, False, True, 0)
+        self.box.pack_start(self._reset_button, False, True, 0)
+        self.box.pack_start(self._mark_button, False, True, 0)
+        self.box.pack_end(eb, False, False, 6)
         
-        markfont = pango.FontDescription()
+        markfont = Pango.FontDescription()
         markfont.set_family("monospace")
-        markfont.set_size(pango.SCALE*10)
-        self._marks_label = gtk.Label()
+        markfont.set_size(Pango.SCALE*10)
+        self._marks_label = Gtk.Label()
         self._marks_label.modify_font(markfont)
         self._marks_label.set_single_line_mode(True)
         self._marks_label.set_selectable(True)
         self._marks_label.set_alignment(0, 0.5) #justify left
         self._marks_label.set_padding(6,0)
         self._marks_model.register_listener(self._update_marks)
-        eb2 = gtk.EventBox()
+        eb2 = Gtk.EventBox()
         eb2.add(self._marks_label)
-        eb2.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
+        eb2.modify_bg(Gtk.StateType.NORMAL, Gdk.color_parse("white"))
         
-        filler0 = gtk.VBox()
-        filler0.pack_start(self.box, expand=False, fill=False)
-        filler0.pack_start(eb2, expand=False, fill=False)
+        filler0 = Gtk.VBox()
+        filler0.pack_start(self.box, False, False, 0)
+        filler0.pack_start(eb2, False, False, 0)
         
-        filler = gtk.VBox()
-        filler.pack_start(filler0, expand=True, fill=False)
+        filler = Gtk.VBox()
+        filler.pack_start(filler0, True, False, 0)
         
-        self.backbox = gtk.EventBox()
+        self.backbox = Gtk.EventBox()
         self.backbox.add(filler)
-        self._black = gtk.gdk.color_parse("black")
-        self._gray = gtk.gdk.Color(256*192, 256*192, 256*192)
+        self._black = Gdk.color_parse("black")
+        self._gray = Gdk.Color(256*192, 256*192, 256*192)
         
-        self.display = gtk.EventBox()
+        self.display = Gtk.EventBox()
         self.display.add(self.backbox)
         #self.display.set_above_child(True)
         self.display.props.can_focus = True
         self.display.connect('focus-in-event', self._got_focus_cb)
         self.display.connect('focus-out-event', self._lost_focus_cb)
-        self.display.add_events(gtk.gdk.ALL_EVENTS_MASK)
+        self.display.add_events(Gdk.EventMask.ALL_EVENTS_MASK)
         self.display.connect('key-press-event', self._keypress_cb)
         #self.display.connect('key-release-event', self._keyrelease_cb)
         
@@ -268,7 +266,7 @@ class OneWatchView():
             self._label_lock.acquire()
             self._timeval = q[0]
             ev = threading.Event()
-            gobject.idle_add(self._update_label, self._format(self._timeval), ev)
+            GObject.idle_add(self._update_label, self._format(self._timeval), ev)
             ev.wait()
             self._label_lock.release()
         self._update_lock.release()
@@ -283,7 +281,7 @@ class OneWatchView():
         self._name.set_editable(False)
         self._name.handler_block(self._name_changed_handler)
         ev = threading.Event()
-        gobject.idle_add(self._set_name, name, ev)
+        GObject.idle_add(self._set_name, name, ev)
         ev.wait()
         self._name.handler_unblock(self._name_changed_handler)
         self._name.set_editable(True)
@@ -312,7 +310,7 @@ class OneWatchView():
             if self._should_update.isSet() and self._is_visible.isSet():
                 s = self._format(time.time() + self._timer.offset - self._timeval)
                 ev.clear()
-                gobject.idle_add(self._update_label, s, ev)
+                GObject.idle_add(self._update_label, s, ev)
                 ev.wait()
                 time.sleep(0.07)
             self._label_lock.release()
@@ -380,14 +378,14 @@ class OneWatchView():
     
     def _got_focus_cb(self, widget, event):
         self._logger.debug("got focus")
-        self.backbox.modify_bg(gtk.STATE_NORMAL, self._black)
-        self._name.modify_bg(gtk.STATE_NORMAL, self._black)
+        self.backbox.modify_bg(Gtk.StateType.NORMAL, self._black)
+        self._name.modify_bg(Gtk.StateType.NORMAL, self._black)
         return True
     
     def _lost_focus_cb(self, widget, event):
         self._logger.debug("lost focus")
-        self.backbox.modify_bg(gtk.STATE_NORMAL, self._gray)
-        self._name.modify_bg(gtk.STATE_NORMAL, self._gray)
+        self.backbox.modify_bg(Gtk.StateType.NORMAL, self._gray)
+        self._name.modify_bg(Gtk.StateType.NORMAL, self._gray)
         return True
     
     # KP_End == check gamekey = 65436
@@ -395,7 +393,7 @@ class OneWatchView():
     # KP_Home == box gamekey = 65429
     # KP_Page_Up == O gamekey = 65434
     def _keypress_cb(self, widget, event):
-        self._logger.debug("key press: " + gtk.gdk.keyval_name(event.keyval)+ " " + str(event.keyval))
+        self._logger.debug("key press: " + Gdk.keyval_name(event.keyval)+ " " + str(event.keyval))
         if event.keyval == 65436:
             self._run_button.clicked()
         elif event.keyval == 65434:
@@ -426,9 +424,9 @@ class GUIView():
             watch_view = OneWatchView(watch_model, name_model, marks_model, timer)
             self._views.append(watch_view)
             
-        self.display = gtk.VBox()
+        self.display = Gtk.VBox()
         for x in self._views:
-            self.display.pack_start(x.display, expand=True, fill=True)
+            self.display.pack_start(x.display, True, True, 0)
         
         self._pause_lock = threading.Lock()
     
