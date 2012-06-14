@@ -41,21 +41,10 @@ class StopWatchActivity(Activity):
         
         GObject.threads_init()
 
-        # top toolbar with share and close buttons:
-        #OLD_TOOLBAR = False
-
-        #try:
         from sugar3.graphics.toolbarbox import ToolbarBox, ToolbarButton
         from sugar3.activity.widgets import ActivityToolbarButton, StopButton, \
                     ShareButton, TitleEntry, ActivityButton
-        #except ImportError:
-        #    OLD_TOOLBAR = True
 
-        #if OLD_TOOLBAR:
-        #    toolbox = ToolbarBox(self)
-        #    self.set_toolbox(toolbox)
-        #    toolbox.show()
-        #else:
         toolbar_box = ToolbarBox()
         self.activity_button = ActivityButton(self)
         toolbar_box.toolbar.insert(self.activity_button, 0)
