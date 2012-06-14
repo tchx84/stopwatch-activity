@@ -42,44 +42,44 @@ class StopWatchActivity(Activity):
         GObject.threads_init()
 
         # top toolbar with share and close buttons:
-        OLD_TOOLBAR = False
+        #OLD_TOOLBAR = False
 
-        try:
-            from sugar3.graphics.toolbarbox import ToolbarBox, ToolbarButton
-            from sugar3.activity.widgets import ActivityToolbarButton, StopButton, \
+        #try:
+        from sugar3.graphics.toolbarbox import ToolbarBox, ToolbarButton
+        from sugar3.activity.widgets import ActivityToolbarButton, StopButton, \
                     ShareButton, TitleEntry, ActivityButton
-        except ImportError:
-            OLD_TOOLBAR = True
+        #except ImportError:
+        #    OLD_TOOLBAR = True
 
-        if OLD_TOOLBAR:
-            toolbox = ToolbarBox(self)
-            self.set_toolbox(toolbox)
-            toolbox.show()
-        else:
-            toolbar_box = ToolbarBox()
-            self.activity_button = ActivityButton(self)
-            toolbar_box.toolbar.insert(self.activity_button, 0)
-            self.activity_button.show()
+        #if OLD_TOOLBAR:
+        #    toolbox = ToolbarBox(self)
+        #    self.set_toolbox(toolbox)
+        #    toolbox.show()
+        #else:
+        toolbar_box = ToolbarBox()
+        self.activity_button = ActivityButton(self)
+        toolbar_box.toolbar.insert(self.activity_button, 0)
+        self.activity_button.show()
 
-            title_entry = TitleEntry(self)
-            toolbar_box.toolbar.insert(title_entry, -1)
-            title_entry.show()
+        title_entry = TitleEntry(self)
+        toolbar_box.toolbar.insert(title_entry, -1)
+        title_entry.show()
 
-            share_button = ShareButton(self)
-            toolbar_box.toolbar.insert(share_button, -1)
-            share_button.show()
+        share_button = ShareButton(self)
+        toolbar_box.toolbar.insert(share_button, -1)
+        share_button.show()
 
-            separator = Gtk.SeparatorToolItem()
-            separator.props.draw = False
-            separator.set_expand(True)
-            toolbar_box.toolbar.insert(separator, -1)
-            separator.show()
+        separator = Gtk.SeparatorToolItem()
+        separator.props.draw = False
+        separator.set_expand(True)
+        toolbar_box.toolbar.insert(separator, -1)
+        separator.show()
 
-            stop_button = StopButton(self)
-            toolbar_box.toolbar.insert(stop_button, -1)
-            stop_button.show()
+        stop_button = StopButton(self)
+        toolbar_box.toolbar.insert(stop_button, -1)
+        stop_button.show()
 
-            self.set_toolbar_box(toolbar_box)
+        self.set_toolbar_box(toolbar_box)
 
         self.tubebox = dobject.TubeBox()
         self.timer = dobject.TimeHandler("main", self.tubebox)
