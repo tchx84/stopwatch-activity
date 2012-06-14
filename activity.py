@@ -18,7 +18,6 @@
 """Actividad HelloMesh: Un caso de estudio para colaboracion usando Tubos."""
 import logging
 import telepathy
-import gi
 from gi.repository import Gtk, Gdk, GObject
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.activity.activity import Activity
@@ -41,8 +40,7 @@ class StopWatchActivity(Activity):
         
         GObject.threads_init()
 
-        from sugar3.graphics.toolbarbox import ToolbarBox, ToolbarButton
-        from sugar3.activity.widgets import ActivityToolbarButton, StopButton, \
+        from sugar3.activity.widgets import StopButton, \
                     ShareButton, TitleEntry, ActivityButton
 
         toolbar_box = ToolbarBox()
