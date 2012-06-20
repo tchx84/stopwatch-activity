@@ -18,7 +18,11 @@
 """Actividad HelloMesh: Un caso de estudio para colaboracion usando Tubos."""
 import logging
 import telepathy
-from gi.repository import Gtk, Gdk, GObject
+
+from gi.repository import Gtk 
+from gi.repository import Gdk
+from gi.repository import GObject
+
 from sugar3.graphics.toolbarbox import ToolbarBox
 from sugar3.activity.activity import Activity
 from sugar3.presence import presenceservice
