@@ -1,4 +1,5 @@
 # Copyright 2007 Collabora Ltd.
+# Copyright 2011-2012 rafael ortiz rafael@activitycentral.com
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,8 +15,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-"""HelloMesh Activity: A case study for collaboration using Tubes."""
-"""Actividad HelloMesh: Un caso de estudio para colaboracion usando Tubos."""
+"""Stopwatch Activity"""
+"""Actividad Cronometro"""
 import logging
 import telepathy
 
@@ -36,7 +37,7 @@ import cPickle
 SERVICE = "org.laptop.StopWatch"
 
 class StopWatchActivity(Activity):
-    """StopWatch Activity as specified in activity.info"""
+    """StopWatch Activity as specified in activity.info"""f
     def __init__(self, handle):
         """Set up the StopWatch activity."""
         Activity.__init__(self, handle)
