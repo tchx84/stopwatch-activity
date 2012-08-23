@@ -7,19 +7,19 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-12-06 00:41+0000\n"
-"PO-Revision-Date: 2011-03-18 06:14+0200\n"
-"Last-Translator: Chris <cjl@laptop.org>\n"
+"PO-Revision-Date: 2012-07-04 09:15+0200\n"
+"Last-Translator: jui <appukonrad@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Pootle 2.0.1\n"
+"X-Generator: Pootle 2.0.5\n"
 
 #: activity/activity.info:2
 msgid "StopWatch"
-msgstr ""
+msgstr "Stopky"
 
 #: stopwatch.py:162
 msgid "Start/Stop"
@@ -27,12 +27,12 @@ msgstr "Spustit/Zastavit"
 
 #: stopwatch.py:170
 msgid "Zero"
-msgstr ""
+msgstr "Nula"
 
 #: stopwatch.py:177
 msgid "Mark"
-msgstr ""
+msgstr "Značka"
 
 #: stopwatch.py:410
 msgid "Stopwatch"
-msgstr ""
+msgstr "Stopky"
