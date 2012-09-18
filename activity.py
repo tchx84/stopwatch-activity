@@ -20,7 +20,7 @@
 import logging
 import telepathy
 
-from gi.repository import Gtk 
+from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
 
@@ -44,7 +44,7 @@ class StopWatchActivity(Activity):
         self._logger = logging.getLogger('stopwatch-activity')
         
         GObject.threads_init()
-
+        
         from sugar3.activity.widgets import StopButton, \
                     ShareButton, TitleEntry, ActivityButton
 
@@ -60,7 +60,7 @@ class StopWatchActivity(Activity):
         try:
                 from sugar3.activity.widgets import DescriptionItem
                 description_item = DescriptionItem(self)
-                toolbar_box.toolbar.insert(description_item, -1) 
+                toolbar_box.toolbar.insert(description_item, -1)
                 description_item.show()
         except:
                 pass
