@@ -37,7 +37,7 @@ import cPickle
 SERVICE = "org.laptop.StopWatch"
 
 class StopWatchActivity(Activity):
-    """StopWatch Activity as specified in activity.info"""f
+    """StopWatch Activity as specified in activity.info"""
     def __init__(self, handle):
         """Set up the StopWatch activity."""
         Activity.__init__(self, handle)
