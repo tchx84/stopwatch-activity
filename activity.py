@@ -114,13 +114,13 @@ class StopWatchActivity(Activity):
             SERVICE, {})
 
     def _sharing_setup(self):
-        if self._shared_activity is None:
+        if self.shared_activity is None:
             self._logger.error('Failed to share or join activity')
             return
 
-        self.conn = self._shared_activity.telepathy_conn
-        self.tubes_chan = self._shared_activity.telepathy_tubes_chan
-        self.text_chan = self._shared_activity.telepathy_text_chan
+        self.conn = self.shared_activity.telepathy_conn
+        self.tubes_chan = self.shared_activity.telepathy_tubes_chan
+        self.text_chan = self.shared_activity.telepathy_text_chan
 
         self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal('NewTube',
             self._new_tube_cb)
@@ -133,7 +133,7 @@ class StopWatchActivity(Activity):
         self._logger.error('ListTubes() failed: %s', e)
 
     def _joined_cb(self, activity):
-        if not self._shared_activity:
+        if not self.shared_activity:
             return
 
         self._logger.debug('Joined an existing shared activity')
