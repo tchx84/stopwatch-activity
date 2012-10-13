@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-12-06 00:41+0000\n"
-"PO-Revision-Date: 2012-09-19 12:19+0200\n"
-"Last-Translator: Chris <cjl@laptop.org>\n"
+"PO-Revision-Date: 2012-09-21 22:40+0200\n"
+"Last-Translator: hariru <hariruroa@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: mi\n"
 "MIME-Version: 1.0\n"
@@ -18,7 +18,6 @@ msgstr ""
 "X-Generator: Pootle 2.0.5\n"
 
 #: activity/activity.info:2
-#, fuzzy
 msgid "StopWatch"
 msgstr "MatawāTū"
 
@@ -31,11 +30,9 @@ msgid "Zero"
 msgstr "Kore"
 
 #: stopwatch.py:177
-#, fuzzy
 msgid "Mark"
 msgstr "Tohu"
 
 #: stopwatch.py:410
-#, fuzzy
 msgid "Stopwatch"
-msgstr "MatawāTū"
+msgstr "Matawātū"
