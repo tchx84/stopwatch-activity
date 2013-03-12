@@ -7,10 +7,10 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-12-06 00:41+0000\n"
-"PO-Revision-Date: 2011-11-23 09:13+0200\n"
-"Last-Translator: Chris <cjl@laptop.org>\n"
+"PO-Revision-Date: 2013-03-05 00:35+0200\n"
+"Last-Translator: EdgarQuispeChambi <quispedgar@yahoo.es>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: aym\n"
+"Language: ayc\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,22 +19,21 @@ msgstr ""
 
 #: activity/activity.info:2
 msgid "StopWatch"
-msgstr ""
+msgstr "Pacha chimpu ch'ikuña"
 
 #  "Iniciar/Detener"
 #: stopwatch.py:162
-#, fuzzy
 msgid "Start/Stop"
-msgstr "Qalltawi / Sayt'ayaña"
+msgstr "Qalltaña/ Sayt'ayaña"
 
 #: stopwatch.py:170
 msgid "Zero"
-msgstr ""
+msgstr "Ch'usa"
 
 #: stopwatch.py:177
 msgid "Mark"
-msgstr ""
+msgstr "Ch'iku"
 
 #: stopwatch.py:410
 msgid "Stopwatch"
-msgstr ""
+msgstr "Pacha chimpu ch'ikuña"
